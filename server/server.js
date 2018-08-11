@@ -45,10 +45,10 @@ app.get('/todos/:id', (req, res) => {
 
   Todo.findById(id).then((todo) => {
     if (!todo) {
-      return console.log('Todo not found');
+      console.log('Todo not found');
       return res.status(404).send();
     }
-    console.log('Todo found: ', JSON.stringify(todo, undefined, 2));
+    //console.log('Todo found: ', JSON.stringify(todo, undefined, 2));
     res.send({todo});
   }, (e) => {
     console.log(e);
