@@ -1,4 +1,4 @@
-var env = process.env.NODE_ENV || 'development'; // if no NODE_ENV then use 'development'
+var env = process.env.NODE_ENV || 'development'; // if no NODE_ENV then use 'development', default 'poduction'
 console.log('env ****** ->', env);
 
 if (env === 'development') {
