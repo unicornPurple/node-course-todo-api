@@ -1,4 +1,4 @@
-var env = process.env.NODE_ENV || 'development'; // if no NODE_ENV then use 'development', default 'poduction'
+var env = process.env.NODE_ENV || 'development'; // if no NODE_ENV then use 'development', (best practice to set to 'production' when deploying)
 console.log('env ****** ->', env);
 
 if (env === 'development') {
