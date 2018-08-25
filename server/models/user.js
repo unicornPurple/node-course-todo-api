@@ -52,7 +52,25 @@ UserSchema.methods.generateAuthToken = function () {
 
   return user.save().then(() => { // returnerar så att man kan använda .then på den här biten i server.js
     return token;
-  })
+  });
+};
+
+UserSchema.statics.findByToken = function (token) {
+  var User = this;
+  var decoded;
+  //console.log('token is: ', token);
+
+  try {
+    decoded = jwt.verify(token, 'secretvalue123');
+  } catch (e) {
+    return Promise.reject('misc crypto error');
+  }
+
+  return User.findOne({
+    '_id': decoded._id,
+    'tokens.token': token,
+    'tokens.access': 'auth'
+  });
 };
 
 // lecture 90 allt i User flyttas in i UserSchema ovan, nedan görs en hänv till UserSchema

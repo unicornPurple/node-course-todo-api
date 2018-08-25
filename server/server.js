@@ -8,6 +8,7 @@ const {ObjectID} = require('mongodb');
 var {mongoose} = require('./db/mongoose');
 var {Todo} = require('./models/todo');
 var {User} = require('./models/user');
+var {authenticate} =  require('./../middleware/authenticate'); // happened to get slightly off position
 
 var app = express();
 const port = process.env.PORT;
@@ -112,12 +113,12 @@ app.post('/users', (req, res) => {
 
   //User - model method
   //user - instace method
-  console.log('body:', body);
-  console.log('usr: ', user);
+  //console.log('body:', body);
+  //console.log('usr: ', user);
 
   user.save().then(() => {
     //res.send(user);
-    return user.generateAuthToken();
+    return user.generateAuthToken(); // this return value (a token) will be used in next .then() (a promise chain)
   }).then((token) => {
     res.header('x-auth', token).send(user);
   }).catch((e) => {
@@ -125,6 +126,10 @@ app.post('/users', (req, res) => {
   });
 });
 
+
+app.get('/users/me', authenticate, (req, res) => {
+  res.send(req.user); // using authenticate middleware to get user
+});
 
 app.listen(port, () => {
   console.log('Started on port:' + port);
