@@ -80,9 +80,9 @@ UserSchema.pre('save', function (next) {
   if (user.isModified('password')) { // detects when the user has entered a password
     var password = user.password;
 
-    bcrypt.genSalt(12, (err, salt) => {
+    bcrypt.genSalt(9, (err, salt) => {
       bcrypt.hash(password, salt, (err, hash) => {
-        console.log('hash: ', hash);
+        //console.log('hash: ', hash);
         user.password = hash;
         next();
       });

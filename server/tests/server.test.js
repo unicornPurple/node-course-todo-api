@@ -5,22 +5,11 @@ const {ObjectID} = require('mongodb');
 
 const {app} = require('./../server');
 const {Todo} = require('./../models/todo');
+const {User} = require('./../models/user');
+const {todos, populateTodos, users, populateUsers} = require('./seed/seed');
 
-const todos = [{
-  _id: new ObjectID(),
-  text: 'First test todo'
-}, {
-  _id: new ObjectID(),
-  text: 'Second test todo',
-  completed: true,
-  completedAt: 555
-}];
-
-beforeEach((done) => {
-  Todo.remove({}).then(() => { // clears entire todo db before each test is run
-    return Todo.insertMany(todos);
-  }).then(() => done());
-});
+beforeEach(populateUsers);
+beforeEach(populateTodos);
 
 describe('POST /todos', () => {
   it('Should create a new todo', (done) => {
@@ -180,6 +169,74 @@ describe('PATCH /todos/:id', () => {
         expect(res.body.todo.completed).toBe(false);
         expect(res.body.todo.completedAt).toBeNull();
       })
+      .end(done);
+  });
+});
+
+describe('GET /users/me', () => {
+  it('Should return user if authenticated', (done) => {
+    request(app)
+      .get('/users/me')
+      .set('x-auth', users[0].tokens[0].token)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body._id).toBe(users[0]._id.toHexString());
+        expect(res.body.email).toBe(users[0].email);
+      })
+      .end(done);
+  });
+  it('Should return 401 if not authenticated', (done) => {
+    request(app)
+      .get('/users/me')
+      //.set('x-auth', new ObjectID())
+      .expect(401)
+      .expect((res) => {
+        expect(res.body).toEqual({});
+      })
+      .end(done);
+  });
+});
+
+describe('POST /users', () => {
+  it('Should create a user', (done) => {
+    var email = 'example@example.com';
+    var password = '123abc!';
+    request(app)
+      .post('/users')
+      .send({email, password})
+      .expect(200)
+      .expect((res) => {
+        expect(res.headers['x-auth']).toBeTruthy();
+        expect(res.body._id).toBeTruthy();
+        expect(res.body.email).toBe(email);
+      })
+      .end((err) => { // grabbing error if it exists, you can also use .end(done) to end test here
+        if(err) {
+          return done(err);
+        }
+        User.findOne({email}).then((user) => {
+          expect(user).toBeTruthy();
+          expect(user.password).not.toBe(password);
+          done();
+        })
+      });
+  });
+  it('Should return validation errors if request invalid', (done) => {
+    var email = 'ex@ex.com';
+    var password = '';
+    request(app)
+      .post('/users')
+      .send({email, password})
+      .expect(400)
+      .end(done);
+  });
+  it('Should not create user if email in use', (done) => {
+    var email = users[0].email;
+    var password = '123abc!'; 
+    request(app)
+      .post('/users')
+      .send({email, password})
+      .expect(400)
       .end(done);
   });
 });
